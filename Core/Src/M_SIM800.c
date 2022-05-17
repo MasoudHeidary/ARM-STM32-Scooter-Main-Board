@@ -65,12 +65,7 @@ void M_SIM800_incomePacket(void) {
 
 	 // update APP state
 	 APP.Lock = lock;
-	 if(APP.Lock == APP_LockStateFind)
-		 APP.FrontLed = APP_FrontLedToggle;
-	 else
-		 APP.FrontLed = front_led;
-
-	 HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, APP.Lock);
+	 APP.FrontLed = front_led;
 }
 
 

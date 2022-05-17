@@ -13,6 +13,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	if(huart->Instance == USART1){
 		M_SIM800_RXCallBack();
 	}
+
+	if (huart->Instance == USART2) {
+			M_GPS_bufCplt();
+			M_GPS_bufInit(huart2);
+	}
 }
 
 
@@ -25,15 +30,15 @@ void APP_init(void) {
 	APP.ping_reg_timer = HAL_GetTick();
 	APP.publish_timer = HAL_GetTick();
 	APP.step = 0;
+
+	// GPS
+	M_GPS_init(huart2);
+	M_GPS_bufInit(huart2);
 }
 
 void APP_while(void) {
-	APP.ping_reg_timer = HAL_GetTick();
-	APP.publish_timer = HAL_GetTick();
-
 	int packet_id = 1000;
-	int counter = 50;
-	char msg[32] = "";
+	char msg[50] = "";
 
 	if(APP.step == 0) {
 	  if (M_SIM800_init())
@@ -74,7 +79,7 @@ void APP_while(void) {
 
 	// publish process
 	if((APP.step > 2) && (HAL_GetTick() - APP.publish_timer > 15000)) {
-	  sprintf(msg, "msg %d", counter++);
+	  sprintf(msg, "%Lf:%Lf", M_GPS_getLatitude(), M_GPS_getLongitude());
 	  if(!M_MQTT_publish("scooter/112", msg, packet_id++, 0))
 		  APP.step = 0;
 
