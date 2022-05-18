@@ -65,7 +65,13 @@ void M_SIM800_incomePacket(void) {
 
 	 // update APP state
 	 APP.Lock = lock;
-	 APP.FrontLed = front_led;
+	 if(APP.Lock == APP_LockStateFind)
+		 APP.FrontLed = APP_FrontLedToggle;
+	 else
+		 APP.FrontLed = front_led;
+
+	 // update steering wheel
+	 APP_corpiTX();
 }
 
 

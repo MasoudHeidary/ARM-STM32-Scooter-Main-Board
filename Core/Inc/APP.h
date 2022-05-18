@@ -17,6 +17,7 @@ extern "C" {
 #include "main.h"
 #include "M_MQTT.h"
 #include "M-GPS.h"
+#include "lcd.h"
 
 /* Includes ------------------------------------------------------------------*/
 // Lock States
@@ -29,8 +30,33 @@ extern "C" {
 #define APP_FrontLedOn	1
 #define APP_FrontLedToggle 2
 
+// Brake
+#define APP_BrakeFree 0
+#define APP_BrakeTaken 1
+
+// TX
+// ﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏
+// | TX Header(8bit) | 00 00 FrontLED(2) Lock(2) |
+// ﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋
+#define APP_CorpiUART &huart3
+#define APP_TXBufferLen 2
+#define APP_TXHeader '@'
+
+// RX
+// ﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏
+// | RX Header(8bit) | Throttle(8bit) | 00 00 00 Brake(1bit) |
+// ﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋﹋
+#define APP_RXBufferLen 3
+#define APP_RXHeader '@'
+
 /* Includes ------------------------------------------------------------------*/
 struct {
+	// Corpi (steering wheel)
+	uint8_t TXBuffer[APP_TXBufferLen];
+	uint8_t RXBuffer[APP_RXBufferLen];
+	uint8_t Throttle;
+	bool Brake;
+
 	// State
 	uint8_t Lock;
 	uint8_t FrontLed;
@@ -44,6 +70,10 @@ struct {
 /* Includes ------------------------------------------------------------------*/
 
 /* Includes ------------------------------------------------------------------*/
+void APP_init(void);
+void APP_corpiRX(void);
+void APP_corpiTX(void);
+void APP_while(void);
 
 /* Includes ------------------------------------------------------------------*/
 #ifdef __cplusplus
