@@ -17,7 +17,7 @@ extern "C" {
 #include "main.h"
 #include "M_MQTT.h"
 #include "M-GPS.h"
-#include "lcd.h"
+#include "LCD_16x2.h"
 
 /* Includes ------------------------------------------------------------------*/
 // Lock States

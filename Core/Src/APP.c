@@ -20,19 +20,21 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	}
 
 	if (huart->Instance == USART3) {
-			APP_corpiRX();
-			HAL_UART_Receive_DMA(APP_CorpiUART, APP.RXBuffer, APP_RXBufferLen);
-		}
+		APP_corpiRX();
+		HAL_UART_Receive_DMA(APP_CorpiUART, APP.RXBuffer, APP_RXBufferLen);
+	}
 }
 
 
 void APP_init(void) {
 	// Corpi
 	HAL_UART_Receive_DMA(APP_CorpiUART, APP.RXBuffer, APP_RXBufferLen);
-	lcd_init();
-	lcd_clear();
-	lcd_gotoxy(0, 0);
-	lcd_puts("Loading...");
+	LCD_Init();
+	LCD_DisplayOn();
+	LCD_CursorOff();
+	LCD_BlinkOff();
+	LCD_Clear();
+	LCD_Puts(0, 0, "Loading...");
 
 	// initialize states
 	APP.Lock = APP_LockStateLock;
@@ -55,6 +57,8 @@ void APP_corpiRX(void) {
 		APP.Throttle = APP.RXBuffer[1];
 		APP.Brake = APP.RXBuffer[2] ? APP_BrakeTaken : APP_BrakeFree;
 	}
+
+	APP_lcd();
 }
 
 
@@ -67,6 +71,28 @@ void APP_corpiTX(void) {
 	HAL_UART_Transmit(APP_CorpiUART, APP.TXBuffer, APP_TXBufferLen, 1000);
 }
 
+
+void APP_lcd(void) {
+	char str[16] = "";
+	sprintf(str, "Lock:%2d,Led:%2d  ", APP.Lock, APP.FrontLed);
+//	lcd_gotoxy(0, 0);
+//	lcd_puts(str);
+	LCD_Puts(0, 0, str);
+
+	memset(str, 0, 16);
+	if (APP.Lock == APP_LockStateFree){
+		if (APP.Brake == APP_BrakeFree)
+			sprintf(str, "Throttle: %3d", (int)APP.Throttle);
+		else
+			sprintf(str, "BRAKE!         ");
+	} else {
+		sprintf(str, "%15s", "");
+	}
+
+//	lcd_gotoxy(0, 1);
+//	lcd_puts(str);
+	LCD_Puts(0, 1, str);
+}
 
 
 void APP_while(void) {
@@ -118,18 +144,4 @@ void APP_while(void) {
 
 	  APP.publish_timer = HAL_GetTick();
 	}
-
-	// update LCD
-	char str[16] = "";
-	sprintf(str, "Lock:%2d,Led:%2d  ", APP.Lock, APP.FrontLed);
-	lcd_gotoxy(0, 0);
-	lcd_puts(str);
-
-	memset(str, 0, 16);
-	if (APP.Brake == APP_BrakeFree)
-		sprintf(str, "Throttle: %3d", (int)APP.Throttle);
-	else
-		sprintf(str, "BRAKE!         ");
-	lcd_gotoxy(0, 1);
-	lcd_puts(str);
 }
